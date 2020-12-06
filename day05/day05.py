@@ -11,7 +11,6 @@ from numpy.core.function_base import linspace
 
 def puzzle(text):
 
-
     input = ((line[:7], line[7:10]) for line in text)
 
     # part 1
