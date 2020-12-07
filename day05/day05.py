@@ -6,8 +6,6 @@ from numpy import prod
 from itertools import combinations
 from collections import Counter, namedtuple
 
-from numpy.core.function_base import linspace
-
 
 def puzzle(text):
 
