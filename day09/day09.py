@@ -29,11 +29,15 @@ def puzzle(input, preamble=25):
 
     ''' Part 2 '''
     for i,_ in enumerate(input):
-        matches = [v == p1 for v in accumulate(input[i:]) if v <= p1]
-        if any(matches):
-            j = len(matches)
-            p2 = min(input[i:i+j]) + max(input[i:i+j])
-            print(f"Part 2: {p2}")
+
+        match = [
+            min(input[i:i+j]) + max(input[i:i+j]) 
+            for j, v in enumerate(accumulate(input[i:])) 
+            if v == p1
+            ]
+            
+        if match:
+            print(f"Part 2: {match[0]}")
             break
 
     
