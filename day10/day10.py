@@ -8,11 +8,13 @@ from collections import Counter, namedtuple, defaultdict
 from functools import lru_cache
 
 
-def puzzle(input, preamble=25):
+def puzzle(input):
 
     input = [int(n) for n in input]
 
-    adapters = [0] + sorted(input) + [max(input) + 3]
+    outlet = 0
+    device = max(input) + 3
+    adapters = [outlet] + sorted(input) + [device]
 
     ''' Part 1 '''
     diff = [y - x for x, y in zip(adapters, adapters[1:])]
@@ -22,8 +24,28 @@ def puzzle(input, preamble=25):
 
 
     ''' Part 2 '''
-    
 
+    valid_adapters = defaultdict(list)
+    for x, y in combinations(adapters, 2):
+        if 0 < (y - x) <= 3:
+            valid_adapters[x].append(y) 
+
+
+    @lru_cache(maxsize=None)
+    def arrangements(key=0):
+
+        if key == device:
+             return 1
+
+        total = 0
+        for adapter in valid_adapters[key]:
+            total += arrangements(key=adapter)
+
+        return total
+
+
+    p2 = arrangements()
+    print(f"Part 2: {p2}")
 
 
 
@@ -38,11 +60,11 @@ if __name__ == '__main__':
         print("Testing...")
 
         text = open('test.txt', 'r').readlines()
-        puzzle(text, preamble=5)
+        puzzle(text)
 
     else:
         text = open('input.txt', 'r').readlines()
-        puzzle(text, preamble=25)
+        puzzle(text)
 
     
 
