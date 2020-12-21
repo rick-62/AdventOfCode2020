@@ -1,4 +1,4 @@
-# day20
+# day21
 import sys
 import re
 from math import ceil, floor, gcd
