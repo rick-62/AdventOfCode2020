@@ -5,10 +5,11 @@ from collections import Counter, defaultdict, deque, namedtuple
 from copy import deepcopy
 from functools import lru_cache, reduce
 from itertools import (accumulate, chain, combinations, count, cycle,
-                       permutations, product, repeat)
+                       permutations, product, repeat, takewhile, islice)
 from math import ceil, floor, gcd
 from operator import add, mul, or_
 from os import remove
+from time import perf_counter
 
 import numpy as np
 from numpy import uint
@@ -26,63 +27,62 @@ from numpy import uint
 
 def puzzle(input):
     
-    circle = deque([int(c) for c in input[0]])
 
+    def build_circle(dct, n=1):
+        yield n 
+        for i in range(len(dct)):
+            n = dct[n]
+            yield n
 
-    ''' Part 1 '''
+    def play_game(cups, moves, debug=True):
 
-    def remove_cups(circle, n=3):
-        circle.rotate(-1)
-        cups = [circle.popleft() for _ in range(n)]
-        circle.rotate()
-        return cups
+        circle = {k: v for k, v in zip(cups, cups[1:] + cups[:1])}
+        mx = max(cups)
+        curr = cups[0]
 
-    def destination_cup(circle):
-        c = circle[0] - 1
-        while c != -1:
-            if c in circle: break
-            c -= 1
-        if c == -1: c = max(circle)
-        return c
+        for i in range(1, moves+1):
+            cup1 = circle[curr]
+            cup2 = circle[cup1]
+            cup3 = circle[cup2]
 
-    def insert_cups(circle, cups, i):
-        dest = circle.index(i)
-        circle.rotate(-dest-1)
-        circle.extendleft(cups[::-1])
-        circle.rotate(dest+1)
+            if debug: 
+                print(f"-- move {i} --")
+                print(f"cups: {' '.join([str(x) for x in build_circle(circle, curr)])}")
+                print(f"pick up: {cup1}, {cup2}, {cup3}")
 
-    def next_cup(circle):
-        circle.rotate(-1)
+            circle[curr] = circle[cup3]
 
-    def get_output(circle):
-        i = circle.index(1)
-        circle.rotate(-i)
-        circle.popleft()
-        return ''.join([str(c) for c in circle])
+            dest = next(
+                (
+                    x for x in 
+                    (curr-1, curr-2, curr-3, curr-4, mx, mx-1, mx-2) 
+                    if ((x != cup1) and (x != cup2) and (x != cup3)) and (x > 0)
+                )
+            )
 
-    test = deque([9,2,3,4,5,10])
-    assert remove_cups(deque([9,2,3,4,5,10])) == [2,3,4]
-    remove_cups(test)
-    assert list(test) == [9,5,10]
-    assert(destination_cup(test) == 5)
-    insert_cups(test, [2,3,4], 5)
-    assert list(test) == [9,5,2,3,4,10]
-    next_cup(test)
-    assert list(test) == [5,2,3,4,10,9]
+            if debug: 
+                print(f"destination: {dest}", end="\n\n")
 
-    for _ in range(100):
-        cups = remove_cups(circle)
-        i = destination_cup(circle)
-        insert_cups(circle, cups, i)
-        next_cup(circle)
+            circle[cup3] = circle[dest]
+            circle[dest] = cup1
+            curr = circle[curr]
 
-    p1 = get_output(circle)
+        return circle
+
+    ''' Part 1'''
+    cups = [int(c) for c in input[0]]
+    circle = play_game(cups, 100, debug=False)
+    p1 = ''.join([str(x) for x in build_circle(circle) if x != 1])
     print(f"Part 1: {p1}")
-  
 
+    ''' Part2 '''
+    cups = [int(c) for c in input[0]] + list(range(10, 1_000_001))
+    circle = play_game(cups, 10_000_000, debug=False)
+    circle_ = build_circle(circle)
+    p2 = next(circle_) * next(circle_) * next(circle_)
+    print(f"Part 2: {p2}")
 
-
-
+    
 
 if __name__ == '__main__':
 
